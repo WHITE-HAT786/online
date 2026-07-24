@@ -8,6 +8,6 @@
 
   <?php include __DIR__ . '/modal.php'; ?>
 
-  <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/app.js?v=<?= @filemtime(__DIR__ . '/../assets/js/app.js') ?: time() ?>"></script>
 </body>
 </html>
