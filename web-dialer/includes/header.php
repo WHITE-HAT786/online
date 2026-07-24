@@ -13,6 +13,7 @@ $currentDate  = $currentDate  ?? 'May 20, 2025';
 $currentTime  = $currentTime  ?? '10:30 AM';
 $sipStatus    = $sipStatus    ?? 'registered';
 $notifCount   = $notifCount   ?? 3;
+$breadcrumb   = $breadcrumb   ?? []; // e.g. [['label'=>'Dashboard','href'=>'dashboard.php'],['label'=>'Contacts']]
 $siteTitle    = 'WebDialer';
 ?>
 <!DOCTYPE html>
@@ -38,7 +39,21 @@ $siteTitle    = 'WebDialer';
           <button class="icon-btn" id="sidebarToggle" aria-label="Toggle sidebar">
             <i class="fa-solid fa-bars"></i>
           </button>
-          <h1 class="page-title"><?= htmlspecialchars($pageTitle) ?></h1>
+          <div class="page-heading">
+            <h1 class="page-title"><?= htmlspecialchars($pageTitle) ?></h1>
+            <?php if (!empty($breadcrumb)): ?>
+              <nav class="breadcrumb" aria-label="Breadcrumb">
+                <?php foreach ($breadcrumb as $i => $bc): ?>
+                  <?php if ($i > 0): ?><i class="fa-solid fa-angle-right sep"></i><?php endif; ?>
+                  <?php if (!empty($bc['href']) && $i < count($breadcrumb) - 1): ?>
+                    <a href="<?= htmlspecialchars($bc['href']) ?>"><?= htmlspecialchars($bc['label']) ?></a>
+                  <?php else: ?>
+                    <span class="current"><?= htmlspecialchars($bc['label']) ?></span>
+                  <?php endif; ?>
+                <?php endforeach; ?>
+              </nav>
+            <?php endif; ?>
+          </div>
         </div>
 
         <div class="topbar-right">

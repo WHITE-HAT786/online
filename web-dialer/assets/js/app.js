@@ -61,6 +61,12 @@ document.getElementById('dpClearBtn')?.addEventListener('click', () => {
   if (input) input.value = input.value.slice(0, -1);
 });
 
+/* Contacts page — select-all checkbox */
+document.getElementById('checkAll')?.addEventListener('change', (e) => {
+  document.querySelectorAll('.contacts-table tbody .checkbox input')
+    .forEach(cb => cb.checked = e.target.checked);
+});
+
 /* Password show/hide (auth pages) */
 function togglePw(btn) {
   const input = btn.parentElement.querySelector('input');
