@@ -1,0 +1,15 @@
+Options -Indexes
+
+# Redirect root of /web-dialer/ straight to the login page
+DirectoryIndex app/login.php
+
+# Block direct access to sensitive folders
+<FilesMatch "^(database\.sql|.*\.md)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^storage/ - [F,L]
+  RewriteRule ^vendor/  - [F,L]
+</IfModule>

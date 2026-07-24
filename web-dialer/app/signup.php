@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/../backend/config/session.php';
+if (auth_check()) { header('Location: dashboard.php'); exit; }
+
 $pageTitle    = 'Create Account';
 $authSubtitle = 'Create your WebDialer account and start connecting with crystal clear calls and powerful features.';
 include __DIR__ . '/../includes/auth_header.php';
@@ -9,7 +12,7 @@ include __DIR__ . '/../includes/auth_header.php';
   <h2 class="auth-welcome">Create Your Account</h2>
   <p class="auth-card-sub">Join WebDialer and start your journey today.</p>
 
-  <form method="post" action="signup.php" onsubmit="event.preventDefault();">
+  <form id="signupForm">
     <div class="auth-grid-2">
       <div class="auth-field">
         <label class="auth-label" for="fullname">Full Name</label>
@@ -121,5 +124,30 @@ include __DIR__ . '/../includes/auth_header.php';
     </div>
   </form>
 </div>
+
+<script>
+document.getElementById('signupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target;
+  const btn = f.querySelector('button[type="submit"]');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating…';
+  try {
+    await API.post('/backend/auth/signup.php', {
+      fullname: f.fullname.value,
+      email:    f.email.value,
+      username: f.username.value,
+      phone:    f.phone.value,
+      password: f.password.value,
+      timezone: f.timezone.value,
+    });
+    window.location.href = 'dashboard.php';
+  } catch (err) {
+    toast(err.message || 'Signup failed', 'error');
+    btn.disabled = false; btn.innerHTML = orig;
+  }
+});
+</script>
 
 <?php include __DIR__ . '/../includes/auth_footer.php'; ?>

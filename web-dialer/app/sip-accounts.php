@@ -1,8 +1,8 @@
 <?php
+require_once __DIR__ . '/../includes/auth_guard.php';
+
 $pageTitle   = 'SIP Accounts';
 $activeMenu  = 'sip-accounts';
-$currentDate = 'May 20, 2025';
-$currentTime = '10:30 AM';
 $sipStatus   = 'registered';
 $notifCount  = 3;
 $breadcrumb  = [
@@ -10,29 +10,33 @@ $breadcrumb  = [
   ['label' => 'SIP Accounts'],
 ];
 
-$accounts = [
-  [
-    'name'=>'Twilio Account', 'default'=>true, 'sub'=>'Primary Twilio Account',
-    'username'=>'company123', 'server'=>'sip.twilio.com', 'port'=>':5060 (UDP)',
-    'status'=>'registered', 'caller_name'=>'John Doe', 'caller_num'=>'+1 202-555-0143',
-    'last'=>'May 20, 2025', 'last_time'=>'10:28 AM',
-    'icon'=>'fa-circle-nodes', 'color'=>'green',
-  ],
-  [
-    'name'=>'Telnyx Account', 'default'=>false, 'sub'=>'Backup Telnyx',
-    'username'=>'company456', 'server'=>'sip.telnyx.com', 'port'=>':5060 (TCP)',
-    'status'=>'offline', 'caller_name'=>'John Doe', 'caller_num'=>'+1 202-555-0187',
-    'last'=>null,
-    'icon'=>'fa-tower-broadcast', 'color'=>'blue',
-  ],
-  [
-    'name'=>'Bandwidth Account', 'default'=>false, 'sub'=>'US Number',
-    'username'=>'company789', 'server'=>'sip.bandwidth.com', 'port'=>':5061 (TLS)',
-    'status'=>'offline', 'caller_name'=>'John Doe', 'caller_num'=>'+1 202-555-0164',
-    'last'=>null,
-    'icon'=>'fa-signal', 'color'=>'purple',
-  ],
-];
+// Load from DB
+$stmt = db()->prepare("SELECT * FROM pkg_sip WHERE user_id=? ORDER BY is_default DESC, id ASC");
+$stmt->execute([auth_user_id()]);
+$rows = $stmt->fetchAll();
+
+$accounts = array_map(function($r){
+  return [
+    'id'         => (int)$r['id'],
+    'name'       => $r['account_name'],
+    'default'    => (int)$r['is_default'] === 1,
+    'sub'        => $r['subtitle'],
+    'username'   => $r['sip_username'],
+    'server'     => $r['sip_server'],
+    'port'       => ':'.$r['sip_port'].' ('.$r['transport'].')',
+    'status'     => $r['status'] === 'registered' ? 'registered' : 'offline',
+    'caller_name'=> $_SESSION['user']['full_name'] ?? 'User',
+    'caller_num' => $r['caller_id'] ?? '',
+    'last'       => $r['last_registered'] ? date('M j, Y', strtotime($r['last_registered'])) : null,
+    'last_time'  => $r['last_registered'] ? date('g:i A',  strtotime($r['last_registered'])) : null,
+    'icon'       => $r['icon'],
+    'color'      => $r['icon_color'],
+  ];
+}, $rows);
+
+// Counters for stat cards
+$c = ['total'=>count($accounts),'registered'=>0,'offline'=>0,'disabled'=>0];
+foreach ($accounts as $a) { $k = $a['status']; $c[$k] = ($c[$k] ?? 0) + 1; }
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -59,7 +63,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="sip-stat-ic"><i class="fa-solid fa-layer-group"></i></div>
     <div>
       <div class="sip-stat-label">Total Accounts</div>
-      <div class="sip-stat-value">3</div>
+      <div class="sip-stat-value"><?= (int)$c['total'] ?></div>
       <div class="sip-stat-note">All SIP accounts</div>
     </div>
   </div>
@@ -68,7 +72,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="sip-stat-ic"><i class="fa-solid fa-circle-check"></i></div>
     <div>
       <div class="sip-stat-label">Registered</div>
-      <div class="sip-stat-value">1</div>
+      <div class="sip-stat-value"><?= (int)$c['registered'] ?></div>
       <div class="sip-stat-note ok">Currently online</div>
     </div>
   </div>
@@ -77,7 +81,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="sip-stat-ic"><i class="fa-regular fa-clock"></i></div>
     <div>
       <div class="sip-stat-label">Not Registered</div>
-      <div class="sip-stat-value">2</div>
+      <div class="sip-stat-value"><?= (int)$c['offline'] ?></div>
       <div class="sip-stat-note">Currently offline</div>
     </div>
   </div>
@@ -86,7 +90,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="sip-stat-ic"><i class="fa-solid fa-bell-slash"></i></div>
     <div>
       <div class="sip-stat-label">Disabled</div>
-      <div class="sip-stat-value">0</div>
+      <div class="sip-stat-value"><?= (int)$c['disabled'] ?></div>
       <div class="sip-stat-note">Not in use</div>
     </div>
   </div>

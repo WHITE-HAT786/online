@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/../backend/config/session.php';
+if (auth_check()) { header('Location: dashboard.php'); exit; }
+
 $pageTitle    = 'Sign In';
 $authSubtitle = 'WebDialer is a powerful cloud telephony solution that helps you connect, communicate and grow your business.';
 include __DIR__ . '/../includes/auth_header.php';
@@ -8,13 +11,13 @@ include __DIR__ . '/../includes/auth_header.php';
   <h2 class="auth-welcome">Welcome Back! <span class="wave">👋</span></h2>
   <p class="auth-card-sub">Sign in to your WebDialer account</p>
 
-  <form method="post" action="login.php" onsubmit="event.preventDefault();">
+  <form id="loginForm">
     <div class="auth-field">
       <label class="auth-label" for="username">Username / Email</label>
       <div class="auth-input-wrap">
         <i class="fa-regular fa-user left-icon"></i>
         <input id="username" name="username" class="auth-input" type="text"
-               placeholder="Enter your username or email" autocomplete="username" />
+               placeholder="Enter your username or email" autocomplete="username" required />
       </div>
     </div>
 
@@ -23,7 +26,7 @@ include __DIR__ . '/../includes/auth_header.php';
       <div class="auth-input-wrap">
         <i class="fa-solid fa-lock left-icon"></i>
         <input id="password" name="password" class="auth-input" type="password"
-               placeholder="Enter your password" autocomplete="current-password" />
+               placeholder="Enter your password" autocomplete="current-password" required />
         <button type="button" class="toggle-eye" onclick="togglePw(this)" aria-label="Show password">
           <i class="fa-regular fa-eye"></i>
         </button>
@@ -38,7 +41,7 @@ include __DIR__ . '/../includes/auth_header.php';
       <a href="forgot-password.php" class="auth-forgot">Forgot Password?</a>
     </div>
 
-    <button type="submit" class="auth-btn auth-btn-primary">
+    <button type="submit" class="auth-btn auth-btn-primary" id="loginBtn">
       <i class="fa-solid fa-right-to-bracket"></i>
       Sign In
     </button>
@@ -60,5 +63,25 @@ include __DIR__ . '/../includes/auth_header.php';
     </div>
   </form>
 </div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in…';
+  try {
+    await API.post('/backend/auth/login.php', {
+      username: document.getElementById('username').value,
+      password: document.getElementById('password').value,
+    });
+    window.location.href = 'dashboard.php';
+  } catch (err) {
+    toast(err.message || 'Login failed', 'error');
+    btn.disabled = false; btn.innerHTML = orig;
+  }
+});
+</script>
 
 <?php include __DIR__ . '/../includes/auth_footer.php'; ?>

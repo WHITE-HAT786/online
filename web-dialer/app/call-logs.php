@@ -1,8 +1,8 @@
 <?php
+require_once __DIR__ . '/../includes/auth_guard.php';
+
 $pageTitle   = 'Call Logs';
 $activeMenu  = 'call-logs';
-$currentDate = 'May 20, 2025';
-$currentTime = '10:30 AM';
 $sipStatus   = 'registered';
 $notifCount  = 3;
 $breadcrumb  = [
@@ -17,19 +17,33 @@ $currentPlan = [
   'status' => 'active',
 ];
 
-// Sample call log data — replace with DB query later
-$logs = [
-  ['dt'=>'May 20, 2025 10:25:30 AM','type'=>'outgoing','from'=>'+1 (202) 555-0183','to'=>'+1 (305) 555-0147','account'=>'Primary Account','duration'=>'00:02:15','status'=>'completed','rec'=>true],
-  ['dt'=>'May 20, 2025 10:18:44 AM','type'=>'incoming','from'=>'+1 (305) 555-0147','to'=>'+1 (202) 555-0183','account'=>'Primary Account','duration'=>'00:01:48','status'=>'completed','rec'=>true],
-  ['dt'=>'May 20, 2025 09:55:12 AM','type'=>'outgoing','from'=>'+1 (202) 555-0183','to'=>'+1 (617) 555-0198','account'=>'Sales Account',  'duration'=>'00:05:23','status'=>'completed','rec'=>true],
-  ['dt'=>'May 20, 2025 09:42:07 AM','type'=>'missed',  'from'=>'+1 (213) 555-0112','to'=>'+1 (202) 555-0183','account'=>'Primary Account','duration'=>'00:00:00','status'=>'missed',   'rec'=>false],
-  ['dt'=>'May 20, 2025 09:15:33 AM','type'=>'outgoing','from'=>'+1 (202) 555-0183','to'=>'+1 (408) 555-0166','account'=>'Support Account','duration'=>'00:03:11','status'=>'completed','rec'=>true],
-  ['dt'=>'May 20, 2025 08:59:21 AM','type'=>'incoming','from'=>'+1 (408) 555-0166','to'=>'+1 (202) 555-0183','account'=>'Support Account','duration'=>'00:04:02','status'=>'completed','rec'=>true],
-  ['dt'=>'May 19, 2025 07:48:10 PM','type'=>'outgoing','from'=>'+1 (202) 555-0183','to'=>'+1 (704) 555-0123','account'=>'Sales Account',  'duration'=>'00:01:33','status'=>'completed','rec'=>true],
-  ['dt'=>'May 19, 2025 07:32:55 PM','type'=>'incoming','from'=>'+1 (704) 555-0123','to'=>'+1 (202) 555-0183','account'=>'Sales Account',  'duration'=>'00:02:45','status'=>'completed','rec'=>true],
-  ['dt'=>'May 19, 2025 06:15:09 PM','type'=>'outgoing','from'=>'+1 (202) 555-0183','to'=>'+1 (786) 555-0101','account'=>'Primary Account','duration'=>'00:00:58','status'=>'completed','rec'=>true],
-  ['dt'=>'May 19, 2025 05:59:47 PM','type'=>'outgoing','from'=>'+1 (202) 555-0183','to'=>'+1 (301) 555-0177','account'=>'Support Account','duration'=>'00:04:36','status'=>'completed','rec'=>true],
-];
+// Live counters
+$uid = auth_user_id();
+$r = db()->prepare("SELECT COUNT(*) c,
+    SUM(direction='outgoing') o, SUM(direction='incoming') i,
+    SUM(direction='missed') m, COALESCE(SUM(duration_sec),0) d
+  FROM pkg_call WHERE user_id=?");
+$r->execute([$uid]); $stats = $r->fetch();
+
+// Fetch logs (last 10)
+$rows = db()->prepare("SELECT c.*, s.account_name AS sip_name FROM pkg_call c
+  LEFT JOIN pkg_sip s ON s.id=c.sip_id
+  WHERE c.user_id=? ORDER BY c.started_at DESC LIMIT 10");
+$rows->execute([$uid]);
+$dbLogs = $rows->fetchAll();
+
+$logs = array_map(function($r){
+  return [
+    'dt'       => date('M j, Y g:i:s A', strtotime($r['started_at'])),
+    'type'     => $r['direction'],
+    'from'     => $r['from_number'],
+    'to'       => $r['to_number'],
+    'account'  => $r['sip_name'] ?? '—',
+    'duration' => fmt_duration((int)$r['duration_sec']),
+    'status'   => $r['status'],
+    'rec'      => !empty($r['recording_url']),
+  ];
+}, $dbLogs);
 
 include __DIR__ . '/../includes/header.php';
 ?>

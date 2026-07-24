@@ -1,8 +1,8 @@
 <?php
+require_once __DIR__ . '/../includes/auth_guard.php';
+
 $pageTitle   = 'Subscription';
 $activeMenu  = 'subscription';
-$currentDate = 'May 20, 2025';
-$currentTime = '10:30 AM';
 $sipStatus   = 'registered';
 $notifCount  = 3;
 $breadcrumb  = [

@@ -1,11 +1,33 @@
 <?php
-// Page config — consumed by header.php / sidebar.php
+require_once __DIR__ . '/../includes/auth_guard.php';
+
+// Page-level config
 $pageTitle   = 'Dashboard';
 $activeMenu  = 'dashboard';
-$currentDate = 'May 20, 2025';
-$currentTime = '10:30 AM';
 $sipStatus   = 'registered';
 $notifCount  = 3;
+
+$uid = auth_user_id();
+
+// ---- Live stats for the week ----
+$startCur = date('Y-m-d 00:00:00', strtotime('monday this week'));
+$row = db()->prepare("SELECT COUNT(*) c,
+    SUM(direction='outgoing') o, SUM(direction='incoming') i,
+    SUM(direction='missed') m, COALESCE(SUM(duration_sec),0) d
+  FROM pkg_call WHERE user_id=? AND started_at >= ?");
+$row->execute([$uid, $startCur]);
+$stats = $row->fetch();
+
+// ---- SIP accounts (top 3) ----
+$sipRows = db()->prepare("SELECT * FROM pkg_sip WHERE user_id=? ORDER BY is_default DESC, id ASC LIMIT 3");
+$sipRows->execute([$uid]);
+$sipList = $sipRows->fetchAll();
+
+// ---- Recent calls (5) ----
+$rc = db()->prepare("SELECT c.*, s.account_name AS sip_name FROM pkg_call c
+  LEFT JOIN pkg_sip s ON s.id=c.sip_id WHERE c.user_id=? ORDER BY c.started_at DESC LIMIT 5");
+$rc->execute([$uid]);
+$recentCalls = $rc->fetchAll();
 
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -16,8 +38,8 @@ include __DIR__ . '/../includes/header.php';
     <div class="stat-icon blue"><i class="fa-solid fa-phone"></i></div>
     <div>
       <div class="stat-label">Total Calls</div>
-      <div class="stat-value">128</div>
-      <div class="stat-delta"><i class="fa-solid fa-arrow-up"></i> 12.5% from last week</div>
+      <div class="stat-value"><?= (int)$stats['c'] ?></div>
+      <div class="stat-delta"><i class="fa-solid fa-arrow-up"></i> This week</div>
     </div>
   </div>
 
@@ -25,8 +47,8 @@ include __DIR__ . '/../includes/header.php';
     <div class="stat-icon green"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
     <div>
       <div class="stat-label">Outgoing Calls</div>
-      <div class="stat-value">96</div>
-      <div class="stat-delta"><i class="fa-solid fa-arrow-up"></i> 8.3% from last week</div>
+      <div class="stat-value"><?= (int)$stats['o'] ?></div>
+      <div class="stat-delta"><i class="fa-solid fa-arrow-up"></i> This week</div>
     </div>
   </div>
 
@@ -34,8 +56,8 @@ include __DIR__ . '/../includes/header.php';
     <div class="stat-icon purple"><i class="fa-solid fa-arrow-down"></i></div>
     <div>
       <div class="stat-label">Incoming Calls</div>
-      <div class="stat-value">32</div>
-      <div class="stat-delta"><i class="fa-solid fa-arrow-up"></i> 5.6% from last week</div>
+      <div class="stat-value"><?= (int)$stats['i'] ?></div>
+      <div class="stat-delta"><i class="fa-solid fa-arrow-up"></i> This week</div>
     </div>
   </div>
 
@@ -43,8 +65,8 @@ include __DIR__ . '/../includes/header.php';
     <div class="stat-icon orange"><i class="fa-regular fa-clock"></i></div>
     <div>
       <div class="stat-label">Total Duration</div>
-      <div class="stat-value">05:48:21</div>
-      <div class="stat-delta"><i class="fa-solid fa-arrow-up"></i> 11.8% from last week</div>
+      <div class="stat-value"><?= fmt_duration((int)$stats['d']) ?></div>
+      <div class="stat-delta"><i class="fa-solid fa-arrow-up"></i> This week</div>
     </div>
   </div>
 </section>
@@ -96,35 +118,22 @@ include __DIR__ . '/../includes/header.php';
     </div>
 
     <div class="sip-list">
+      <?php foreach ($sipList as $s):
+        $c = $s['icon_color']; $on = $s['status'] === 'registered';
+      ?>
       <div class="sip-row">
-        <div class="sip-avatar g"><i class="fa-solid fa-circle-nodes"></i></div>
+        <div class="sip-avatar <?= $c === 'green' ? 'g' : ($c === 'blue' ? 'b' : 'p') ?>"><i class="fa-solid <?= e($s['icon']) ?>"></i></div>
         <div>
-          <div class="sip-name">Twilio Account</div>
-          <div class="sip-domain">company123@sip.twilio.com</div>
+          <div class="sip-name"><?= e($s['account_name']) ?></div>
+          <div class="sip-domain"><?= e($s['sip_username']) ?>@<?= e($s['sip_server']) ?></div>
         </div>
-        <span class="sip-status on">Registered</span>
+        <span class="sip-status <?= $on ? 'on' : 'off' ?>"><?= $on ? 'Registered' : 'Offline' ?></span>
         <button class="sip-more"><i class="fa-solid fa-ellipsis-vertical"></i></button>
       </div>
-
-      <div class="sip-row">
-        <div class="sip-avatar b"><i class="fa-solid fa-tower-broadcast"></i></div>
-        <div>
-          <div class="sip-name">Telnyx Account</div>
-          <div class="sip-domain">company456@sip.telnyx.com</div>
-        </div>
-        <span class="sip-status off">Offline</span>
-        <button class="sip-more"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-      </div>
-
-      <div class="sip-row">
-        <div class="sip-avatar p"><i class="fa-solid fa-signal"></i></div>
-        <div>
-          <div class="sip-name">Bandwidth Account</div>
-          <div class="sip-domain">company789@sip.bandwidth.com</div>
-        </div>
-        <span class="sip-status off">Offline</span>
-        <button class="sip-more"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-      </div>
+      <?php endforeach; ?>
+      <?php if (empty($sipList)): ?>
+        <div style="color:var(--muted);padding:20px 0;text-align:center;">No SIP accounts yet.</div>
+      <?php endif; ?>
     </div>
 
     <a href="sip-accounts.php" class="view-all">
@@ -140,61 +149,28 @@ include __DIR__ . '/../includes/header.php';
     </div>
 
     <div class="call-list">
+      <?php foreach ($recentCalls as $c):
+        $init = strtoupper(substr($c['from_number'] ?? '?', -2));
+        $dir  = $c['direction'];
+        $cls  = $dir === 'missed' ? 'miss' : ($dir === 'outgoing' ? 'out' : 'in');
+        $lbl  = $dir === 'missed' ? 'Missed' : gmdate('i:s', (int)$c['duration_sec']);
+        $ico  = $dir === 'missed' ? 'fa-phone-slash' : 'fa-phone';
+      ?>
       <div class="call-row">
-        <div class="call-avatar">SM</div>
+        <div class="call-avatar"><?= e($init) ?></div>
         <div class="call-info">
-          <div class="call-name">Sarah Miller</div>
-          <div class="call-num">+1 (202) 555-0143</div>
+          <div class="call-name"><?= e($dir === 'outgoing' ? $c['to_number'] : $c['from_number']) ?></div>
+          <div class="call-num"><?= e($c['sip_name'] ?? '') ?></div>
         </div>
         <div class="call-meta">
-          <div class="call-time">10:28 AM</div>
-          <div class="call-dur in"><i class="fa-solid fa-phone"></i> 02:36</div>
+          <div class="call-time"><?= date('g:i A', strtotime($c['started_at'])) ?></div>
+          <div class="call-dur <?= $cls ?>"><i class="fa-solid <?= $ico ?>"></i> <?= e($lbl) ?></div>
         </div>
       </div>
-      <div class="call-row">
-        <div class="call-avatar">JB</div>
-        <div class="call-info">
-          <div class="call-name">James Brown</div>
-          <div class="call-num">+1 (202) 555-0187</div>
-        </div>
-        <div class="call-meta">
-          <div class="call-time">10:15 AM</div>
-          <div class="call-dur out"><i class="fa-solid fa-phone"></i> 05:12</div>
-        </div>
-      </div>
-      <div class="call-row">
-        <div class="call-avatar">ET</div>
-        <div class="call-info">
-          <div class="call-name">Emily Taylor</div>
-          <div class="call-num">+1 (202) 555-0129</div>
-        </div>
-        <div class="call-meta">
-          <div class="call-time">09:47 AM</div>
-          <div class="call-dur miss"><i class="fa-solid fa-phone-slash"></i> Missed</div>
-        </div>
-      </div>
-      <div class="call-row">
-        <div class="call-avatar">MW</div>
-        <div class="call-info">
-          <div class="call-name">Michael Wilson</div>
-          <div class="call-num">+1 (202) 555-0164</div>
-        </div>
-        <div class="call-meta">
-          <div class="call-time">09:30 AM</div>
-          <div class="call-dur in"><i class="fa-solid fa-phone"></i> 01:08</div>
-        </div>
-      </div>
-      <div class="call-row">
-        <div class="call-avatar">OL</div>
-        <div class="call-info">
-          <div class="call-name">Olivia Lee</div>
-          <div class="call-num">+1 (202) 555-0112</div>
-        </div>
-        <div class="call-meta">
-          <div class="call-time">09:12 AM</div>
-          <div class="call-dur out"><i class="fa-solid fa-phone"></i> 03:45</div>
-        </div>
-      </div>
+      <?php endforeach; ?>
+      <?php if (empty($recentCalls)): ?>
+        <div style="color:var(--muted);padding:20px 0;text-align:center;">No calls yet.</div>
+      <?php endif; ?>
     </div>
   </div>
 </section>

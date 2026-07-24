@@ -113,6 +113,136 @@ document.querySelectorAll('.color-grid .color-swatch').forEach(sw => {
   });
 });
 
+/* ==========================================================
+   Backend wiring — modals & forms
+   ========================================================== */
+
+/* -------- Add Contact modal (contacts.php) -------- */
+(() => {
+  const modal = document.getElementById('addContactModal');
+  if (!modal) return;
+  const saveBtn = modal.querySelector('.modal-footer .btn-primary');
+  if (!saveBtn) return;
+  saveBtn.addEventListener('click', async () => {
+    const inputs = modal.querySelectorAll('.modal-body input, .modal-body select');
+    const [firstName, lastName, company, phone, phoneType, email, group] =
+      Array.from(inputs).map(i => i.value.trim());
+    if (!firstName || !phone) { toast('First name and phone are required', 'error'); return; }
+    try {
+      await API.post('/backend/contacts/create.php', {
+        first_name: firstName, last_name: lastName, company,
+        phone, phone_type: phoneType || 'Mobile',
+        email, group_name: group || 'Customers',
+      });
+      toast('Contact added', 'success');
+      setTimeout(() => window.location.reload(), 600);
+    } catch (err) { toast(err.message, 'error'); }
+  });
+})();
+
+/* -------- Add SIP Account modal (sip-accounts.php + dashboard.php) -------- */
+(() => {
+  const modal = document.getElementById('addSipModal') || document.getElementById('addAccountModal');
+  if (!modal) return;
+  const saveBtn = modal.querySelector('.modal-footer .btn-primary');
+  if (!saveBtn) return;
+  saveBtn.addEventListener('click', async () => {
+    const inputs = modal.querySelectorAll('.modal-body input, .modal-body select');
+    if (inputs.length < 4) return;
+    const [nameEl, ...rest] = inputs;
+    // Simpler: match by placeholder
+    const q = sel => modal.querySelector(sel);
+    const name    = q('input[placeholder*="Twilio"], input[placeholder*="Account Name"]')?.value.trim() ?? nameEl.value.trim();
+    const server  = q('input[placeholder*="sip.provider"], input[placeholder*="provider.com"]')?.value.trim();
+    const port    = q('input[value="5060"]')?.value.trim() || 5060;
+    const trans   = q('select')?.value || 'UDP';
+    const caller  = q('input[placeholder*="202-555"], input[placeholder*="+1"]')?.value.trim();
+    const uname   = q('input[placeholder="username"]')?.value.trim();
+    const upass   = q('input[type="password"]')?.value.trim();
+    const isDef   = q('input[type="checkbox"]')?.checked ? 1 : 0;
+    if (!name || !uname || !upass || !server) { toast('Please fill all required fields', 'error'); return; }
+    try {
+      await API.post('/backend/sip/create.php', {
+        account_name: name, sip_server: server, sip_port: port,
+        transport: trans, caller_id: caller,
+        sip_username: uname, sip_password: upass, is_default: isDef,
+      });
+      toast('SIP account added', 'success');
+      setTimeout(() => window.location.reload(), 600);
+    } catch (err) { toast(err.message, 'error'); }
+  });
+})();
+
+/* -------- Delete contact rows -------- */
+document.querySelectorAll('.contacts-table .row-delete').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm('Delete this contact?')) return;
+    const tr = btn.closest('tr');
+    const idx = Array.from(tr.parentNode.children).indexOf(tr);
+    // For real use, embed data-id="123" on the tr. Skipping without an id.
+    if (!btn.dataset.id) { tr.remove(); return; }
+    try {
+      await API.post('/backend/contacts/delete.php', { id: btn.dataset.id });
+      tr.remove();
+      toast('Contact deleted', 'success');
+    } catch (err) { toast(err.message, 'error'); }
+  });
+});
+
+/* -------- Settings: profile save -------- */
+(() => {
+  const saveBtn = document.querySelector('.settings-card .btn-primary i.fa-floppy-disk')?.parentElement;
+  if (!saveBtn) return;
+  saveBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const card = saveBtn.closest('.settings-card');
+    const inputs = card.querySelectorAll('input, select');
+    const [fullname, email, phone, language, timezone] = Array.from(inputs).slice(0, 5).map(i => i.value);
+    try {
+      await API.post('/backend/auth/profile.php', { fullname, email, phone, language, timezone });
+      toast('Profile updated', 'success');
+    } catch (err) { toast(err.message, 'error'); }
+  });
+})();
+
+/* -------- Settings: password update -------- */
+(() => {
+  const btn = document.querySelector('.settings-card .btn-primary i.fa-key')?.parentElement;
+  if (!btn) return;
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const card = btn.closest('.settings-card');
+    const [cur, np, cp] = Array.from(card.querySelectorAll('input[type="password"]')).map(i => i.value);
+    if (!cur || !np) { toast('Please fill all fields', 'error'); return; }
+    try {
+      await API.post('/backend/settings/password.php', {
+        current_password: cur, new_password: np, confirm_password: cp,
+      });
+      toast('Password updated', 'success');
+      card.querySelectorAll('input[type="password"]').forEach(i => i.value = '');
+    } catch (err) { toast(err.message, 'error'); }
+  });
+})();
+
+/* -------- Dialer: place a call -------- */
+document.querySelector('.dp-call')?.addEventListener('click', async () => {
+  const num = document.getElementById('dialpadInput')?.value.trim();
+  if (!num) { toast('Enter a number to call', 'error'); return; }
+  try {
+    const r = await API.post('/backend/dialer/call.php', { to_number: num });
+    toast('Calling ' + num, 'success');
+    window._activeCall = r.data;
+  } catch (err) { toast(err.message, 'error'); }
+});
+document.querySelector('.ac-btn-end')?.addEventListener('click', async () => {
+  if (!window._activeCall) { toast('No active call', 'error'); return; }
+  try {
+    await API.post('/backend/dialer/hangup.php', { call_id: window._activeCall.call_id });
+    toast('Call ended', 'success');
+    window._activeCall = null;
+  } catch (err) { toast(err.message, 'error'); }
+});
+
 /* Password show/hide (auth pages) */
 function togglePw(btn) {
   const input = btn.parentElement.querySelector('input');

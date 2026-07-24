@@ -1,8 +1,8 @@
 <?php
+require_once __DIR__ . '/../includes/auth_guard.php';
+
 $pageTitle   = 'Contacts';
 $activeMenu  = 'contacts';
-$currentDate = 'May 20, 2025';
-$currentTime = '10:30 AM';
 $sipStatus   = 'registered';
 $notifCount  = 3;
 $breadcrumb  = [
@@ -10,16 +10,24 @@ $breadcrumb  = [
   ['label' => 'Contacts'],
 ];
 
-// Sample data — replace with DB query in real usage
-$contacts = [
-  ['initials'=>'SM','name'=>'Sarah Miller',   'company'=>'Acme Inc.',         'phone'=>'+1 (202) 555-0143','phone_type'=>'Mobile','email'=>'sarah.miller@acme.com',      'group'=>'Customers','avatar'=>'green'],
-  ['initials'=>'JB','name'=>'James Brown',    'company'=>'Globex Corporation','phone'=>'+1 (202) 555-0187','phone_type'=>'Mobile','email'=>'james.brown@globex.com',     'group'=>'Partners', 'avatar'=>'blue'],
-  ['initials'=>'ET','name'=>'Emily Taylor',   'company'=>'Initech',           'phone'=>'+1 (202) 555-0129','phone_type'=>'Work',  'email'=>'emily.taylor@initech.com',   'group'=>'Clients',  'avatar'=>'red'],
-  ['initials'=>'MW','name'=>'Michael Wilson', 'company'=>'Soylent Corp.',     'phone'=>'+1 (202) 555-0164','phone_type'=>'Mobile','email'=>'michael.wilson@soylent.com', 'group'=>'Customers','avatar'=>'orange'],
-  ['initials'=>'OL','name'=>'Olivia Lee',     'company'=>'Umbrella Corp.',    'phone'=>'+1 (202) 555-0112','phone_type'=>'Work',  'email'=>'olivia.lee@umbrella.com',    'group'=>'Partners', 'avatar'=>'purple'],
-  ['initials'=>'DC','name'=>'Daniel Clark',   'company'=>'Stark Industries',  'phone'=>'+1 (202) 555-0177','phone_type'=>'Mobile','email'=>'daniel.clark@stark.com',     'group'=>'Suppliers','avatar'=>'teal'],
-  ['initials'=>'LC','name'=>'Laura Carter',   'company'=>'Wayne Enterprises', 'phone'=>'+1 (202) 555-0133','phone_type'=>'Work',  'email'=>'laura.carter@wayne.com',     'group'=>'Clients',  'avatar'=>'pink'],
-];
+// Load from DB
+$stmt = db()->prepare("SELECT * FROM pkg_contact WHERE user_id=? ORDER BY first_name ASC, last_name ASC");
+$stmt->execute([auth_user_id()]);
+$rows = $stmt->fetchAll();
+
+$contacts = array_map(function($r){
+  return [
+    'id'         => (int)$r['id'],
+    'initials'   => strtoupper(substr($r['first_name'],0,1) . substr($r['last_name']??'',0,1)),
+    'name'       => trim($r['first_name'].' '.($r['last_name']??'')),
+    'company'    => $r['company'],
+    'phone'      => $r['phone'],
+    'phone_type' => $r['phone_type'],
+    'email'      => $r['email'],
+    'group'      => $r['group_name'],
+    'avatar'     => $r['avatar_color'],
+  ];
+}, $rows);
 
 // Group tag color map
 $groupColor = [

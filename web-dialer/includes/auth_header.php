@@ -21,6 +21,7 @@ $authSubtitle = $authSubtitle ?? 'Sign in to your WebDialer account';
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/auth.css?v=<?= @filemtime(__DIR__ . '/../assets/css/auth.css') ?: time() ?>" />
+  <script src="../assets/js/api.js?v=<?= @filemtime(__DIR__ . '/../assets/js/api.js') ?: time() ?>"></script>
 </head>
 <body>
   <div class="auth-page">
