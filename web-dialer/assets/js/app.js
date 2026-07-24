@@ -83,6 +83,36 @@ document.querySelectorAll('.cycle-toggle .ct-btn').forEach(btn => {
   });
 });
 
+/* Settings — left nav highlight */
+document.querySelectorAll('.settings-nav .settings-nav-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    // Only prevent default if it's an in-page anchor (starts with #)
+    if (item.getAttribute('href')?.startsWith('#')) e.preventDefault();
+    document.querySelectorAll('.settings-nav .settings-nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+
+/* Settings — theme option picker */
+document.querySelectorAll('.theme-grid .theme-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.parentElement.querySelectorAll('.theme-opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+/* Settings — primary color picker */
+document.querySelectorAll('.color-grid .color-swatch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    sw.parentElement.querySelectorAll('.color-swatch').forEach(s => {
+      s.classList.remove('active');
+      s.innerHTML = '';
+    });
+    sw.classList.add('active');
+    sw.innerHTML = '<i class="fa-solid fa-check"></i>';
+  });
+});
+
 /* Password show/hide (auth pages) */
 function togglePw(btn) {
   const input = btn.parentElement.querySelector('input');
