@@ -2387,3 +2387,181 @@ button { font-family: inherit; cursor: pointer; }
   .other-grid { grid-template-columns: 1fr; }
 }
 
+
+/* ============================================================
+   SIP Accounts page
+   ============================================================ */
+.sip-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.sip-head-actions {
+  display: flex; align-items: center; gap: 10px;
+}
+.sip-head-actions .btn-outline,
+.sip-head-actions .btn { height: 42px; padding: 0 18px; font-weight: 500; }
+
+/* -------- Stat cards (soft-tinted background) -------- */
+.sip-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 18px; margin-bottom: 22px;
+}
+.sip-stat {
+  border-radius: var(--radius);
+  padding: 22px;
+  display: flex; align-items: center; gap: 18px;
+  border: 1px solid transparent;
+}
+.sip-stat-ic {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 20px; color: #fff;
+  flex-shrink: 0;
+}
+.sip-stat-label { color: var(--text-2); font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.sip-stat-value { font-size: 26px; font-weight: 700; letter-spacing: -.5px; color: var(--text); }
+.sip-stat-note { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.sip-stat-note.ok { color: var(--brand-green); font-weight: 500; }
+
+.sip-stat-blue   { background: #eaf1ff; border-color: #dbe6ff; }
+.sip-stat-blue   .sip-stat-ic { background: var(--brand-blue); }
+
+.sip-stat-green  { background: #ecfdf5; border-color: #cdefdd; }
+.sip-stat-green  .sip-stat-ic { background: var(--brand-green); }
+.sip-stat-green  .sip-stat-value { color: var(--brand-green); }
+
+.sip-stat-orange { background: #fff8ee; border-color: #ffe4c1; }
+.sip-stat-orange .sip-stat-ic { background: #f59e0b; }
+
+.sip-stat-purple { background: #f3edff; border-color: #e5d9fb; }
+.sip-stat-purple .sip-stat-ic { background: var(--brand-purple); }
+
+/* -------- Accounts table -------- */
+.sip-table-card { padding: 0; overflow: hidden; margin-bottom: 22px; }
+.sip-table-wrap { overflow-x: auto; }
+.sip-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.sip-table thead th {
+  text-align: left;
+  padding: 16px 18px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+  background: #fafbfd;
+  white-space: nowrap;
+}
+.sip-col-num { width: 48px; text-align: center; color: var(--muted); font-weight: 500; }
+.sip-col-actions { width: 60px; text-align: center; }
+
+.sip-table tbody td {
+  padding: 18px;
+  border-bottom: 1px solid #eef2f9;
+  vertical-align: middle;
+  color: var(--text);
+  white-space: nowrap;
+}
+.sip-table tbody tr:last-child td { border-bottom: none; }
+.sip-table tbody tr:hover { background: #fafbfd; }
+
+/* Account cell */
+.sip-account { display: flex; align-items: center; gap: 12px; }
+.sip-account-ic {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center;
+  color: #fff; font-size: 15px;
+  flex-shrink: 0;
+}
+.sip-ic-green  { background: var(--brand-green); }
+.sip-ic-blue   { background: var(--brand-blue); }
+.sip-ic-purple { background: var(--brand-purple); }
+.sip-ic-orange { background: #f59e0b; }
+
+.sip-account-name {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 600; color: var(--text); font-size: 14.5px;
+}
+.tag-default {
+  background: #eaf1ff; color: var(--brand-blue);
+  padding: 2px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+  border: 1px solid #cfdcff;
+}
+.sip-account-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+.sip-username { color: var(--text-2); font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-size: 13px; }
+
+.sip-server { font-weight: 500; }
+.sip-port   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* Status dot pill */
+.sip-status-dot {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 500;
+}
+.sip-status-dot .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.sip-status-dot.on  { color: var(--brand-green); }
+.sip-status-dot.on  .dot { background: var(--brand-green); box-shadow: 0 0 0 3px rgba(16,185,129,.15); }
+.sip-status-dot.off { color: #ef4444; }
+.sip-status-dot.off .dot { background: #ef4444; }
+
+.sip-caller { font-weight: 500; color: var(--text); }
+.sip-caller-num { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.sip-last-date { font-weight: 500; color: var(--text); }
+.sip-last-time { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.sip-dash { color: var(--muted); font-size: 16px; }
+
+.sip-actions-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: #fff; border: 1px solid var(--border);
+  color: var(--muted); font-size: 14px;
+  cursor: pointer;
+  display: inline-grid; place-items: center;
+  transition: background .15s, color .15s;
+}
+.sip-actions-btn:hover { background: #eef2f9; color: var(--text); }
+
+/* -------- Info banner -------- */
+.sip-info-banner {
+  background: #eef4ff;
+  border: 1px solid #dfe8fb;
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: flex; align-items: center; gap: 16px;
+}
+.sip-info-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--brand-blue); color: #fff;
+  display: grid; place-items: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.sip-info-body { flex: 1; }
+.sip-info-title {
+  color: var(--brand-blue);
+  font-weight: 700; font-size: 15px;
+  margin-bottom: 4px;
+}
+.sip-info-text { color: var(--text-2); font-size: 13.5px; line-height: 1.5; }
+.sip-info-btn {
+  color: var(--brand-blue);
+  border-color: #cfdcff;
+  background: #fff;
+}
+.sip-info-btn:hover { border-color: var(--brand-blue); }
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .sip-stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 720px) {
+  .sip-stats { grid-template-columns: 1fr; }
+  .sip-info-banner { flex-direction: column; align-items: flex-start; text-align: left; }
+}
+
