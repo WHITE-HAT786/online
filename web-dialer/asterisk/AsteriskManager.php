@@ -1,22 +1,9 @@
 <?php
 /**
- * AsteriskManager — very small AMI (Asterisk Manager Interface) client.
- *
- * Handles Login, Originate, Hangup, Redirect (transfer), PlayDTMF, and
- * arbitrary Action commands over a raw TCP socket.
- *
- * When `asterisk/config.php` returns `enabled => false`, all methods return a
- * mocked success response so the rest of the app keeps working while your PBX
- * is being wired up.
- *
- * -----------------------------------------------------------------------
- * Usage:
- *   $ast = new AsteriskManager();
- *   $ast->originate('SIP/twilio', '+13055550147', 'John Doe');
- *   $ast->hangup('SIP/twilio-00000123');
- *   $ast->transfer($channel, '2000');
- *   $ast->playDtmf($channel, '1');
- * -----------------------------------------------------------------------
+ * AsteriskManager — talks to your PBX either via:
+ *   • FastAPI bridge  (mode = 'bridge', preferred)  → http://<PBX>:8766/asterisk/*
+ *   • Direct AMI      (mode = 'ami')                → TCP socket to Manager port
+ *   • Mock            (mode = 'mock' or enabled=false) → returns fake success
  */
 class AsteriskManager
 {
@@ -29,12 +16,29 @@ class AsteriskManager
   }
 
   public function isEnabled(): bool { return !empty($this->cfg['enabled']); }
+  public function mode(): string    { return $this->cfg['mode'] ?? 'mock'; }
 
   // -------------- High-level actions --------------
 
   public function originate(string $sipChannel, string $extension, string $callerId = ''): array
   {
-    return $this->send('Originate', [
+    if (!$this->isEnabled() || $this->mode() === 'mock') {
+      return ['ok'=>true,'mocked'=>true,'action'=>'originate','channel'=>$sipChannel,'exten'=>$extension];
+    }
+
+    if ($this->mode() === 'bridge') {
+      return $this->bridgePost('/asterisk/originate', [
+        'channel'  => $sipChannel,
+        'exten'    => $extension,
+        'context'  => $this->cfg['context'],
+        'priority' => 1,
+        'timeout'  => 30000,
+        'callerid' => $callerId ?: $this->cfg['caller_id'],
+      ]);
+    }
+
+    // AMI direct
+    return $this->amiSend('Originate', [
       'Channel'  => $sipChannel,
       'Exten'    => $extension,
       'Context'  => $this->cfg['context'],
@@ -45,54 +49,83 @@ class AsteriskManager
     ]);
   }
 
-  public function hangup(string $channel): array
+  public function hangup(string $channel): array { return $this->action('Hangup',   ['Channel' => $channel]); }
+  public function transfer(string $channel, string $ext): array {
+    return $this->action('Redirect', ['Channel' => $channel, 'Exten' => $ext, 'Context' => $this->cfg['context'], 'Priority' => 1]);
+  }
+  public function playDtmf(string $channel, string $digit): array { return $this->action('PlayDTMF', ['Channel'=>$channel,'Digit'=>$digit]); }
+  public function mute(string $channel, bool $on = true): array   { return $this->action('MuteAudio',['Channel'=>$channel,'Direction'=>'in','State'=>$on?'on':'off']); }
+  public function hold(string $channel, bool $on = true): array   { return $this->action($on?'MOHStart':'MOHStop', ['Channel'=>$channel]); }
+
+  public function command(string $cli): array
   {
-    return $this->send('Hangup', ['Channel' => $channel]);
+    if ($this->mode() === 'bridge') return $this->bridgePost('/asterisk/command', ['command' => $cli]);
+    return $this->amiSend('Command', ['Command' => $cli]);
   }
 
-  public function transfer(string $channel, string $extension): array
+  // -------------- Internal dispatch --------------
+
+  private function action(string $ami, array $params): array
   {
-    return $this->send('Redirect', [
-      'Channel'  => $channel,
-      'Exten'    => $extension,
-      'Context'  => $this->cfg['context'],
-      'Priority' => 1,
+    if (!$this->isEnabled() || $this->mode() === 'mock') {
+      return ['ok'=>true,'mocked'=>true,'action'=>$ami,'params'=>$params];
+    }
+    if ($this->mode() === 'bridge') {
+      // FastAPI bridge exposes /asterisk/command for arbitrary CLI.
+      // Map common AMI actions into CLI equivalents where possible.
+      $ch = $params['Channel'] ?? '';
+      $map = [
+        'Hangup'   => "channel request hangup {$ch}",
+        'Redirect' => "channel redirect {$ch} " . ($params['Context']??'') . ',' . ($params['Exten']??'') . ',1',
+        'PlayDTMF' => "channel send dtmf {$params['Digit']} to {$ch}",
+        'MOHStart' => "moh start {$ch}",
+        'MOHStop'  => "moh stop {$ch}",
+        'MuteAudio'=> ($params['State']??'')==='on' ? "mixmonitor mute {$ch}" : "mixmonitor unmute {$ch}",
+      ];
+      $cli = $map[$ami] ?? "core show channel {$ch}";
+      return $this->bridgePost('/asterisk/command', ['command' => $cli]);
+    }
+    return $this->amiSend($ami, $params);
+  }
+
+  // -------------- FastAPI bridge --------------
+
+  private function bridgePost(string $path, array $body): array
+  {
+    $url = rtrim($this->cfg['bridge_url'], '/') . $path;
+    $ch  = curl_init($url);
+    $headers = ['Content-Type: application/json'];
+    if (!empty($this->cfg['bridge_key'])) $headers[] = 'Authorization: Bearer ' . $this->cfg['bridge_key'];
+    curl_setopt_array($ch, [
+      CURLOPT_POST           => true,
+      CURLOPT_POSTFIELDS     => json_encode($body),
+      CURLOPT_HTTPHEADER     => $headers,
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_TIMEOUT        => (int)$this->cfg['timeout'],
+      CURLOPT_SSL_VERIFYPEER => false,
+      CURLOPT_SSL_VERIFYHOST => false,
     ]);
+    $res  = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err  = curl_error($ch);
+    curl_close($ch);
+    if ($err) return ['ok'=>false, 'message'=>$err];
+    $data = json_decode($res, true);
+    return ['ok'=>$code >= 200 && $code < 300, 'status'=>$code, 'response'=>$data ?? $res];
   }
 
-  public function playDtmf(string $channel, string $digit): array
-  {
-    return $this->send('PlayDTMF', ['Channel' => $channel, 'Digit' => $digit]);
-  }
+  // -------------- Raw AMI (only used in 'ami' mode) --------------
 
-  public function mute(string $channel, bool $on = true): array
+  private function amiSend(string $action, array $params): array
   {
-    return $this->send('MuteAudio', ['Channel'=>$channel, 'Direction'=>'in', 'State'=>$on?'on':'off']);
-  }
-
-  public function hold(string $channel, bool $on = true): array
-  {
-    return $this->send($on ? 'MOHStart' : 'MOHStop', ['Channel' => $channel]);
-  }
-
-  // -------------- Low-level AMI --------------
-
-  public function send(string $action, array $params = []): array
-  {
-    if (!$this->isEnabled()) {
-      return ['ok'=>true, 'mocked'=>true, 'action'=>$action, 'params'=>$params];
-    }
-    if (!$this->connect() || !$this->login()) {
-      return ['ok'=>false, 'message'=>'AMI connection failed'];
-    }
+    if (!$this->connect() || !$this->login()) return ['ok'=>false,'message'=>'AMI connection failed'];
     $msg = "Action: {$action}\r\n";
     foreach ($params as $k => $v) $msg .= "{$k}: {$v}\r\n";
     $msg .= "\r\n";
     fwrite($this->sock, $msg);
-
-    $response = $this->readResponse();
+    $resp = $this->readResponse();
     $this->logoff();
-    return ['ok'=>str_contains($response, 'Response: Success'), 'raw'=>$response];
+    return ['ok'=>str_contains($resp, 'Response: Success'), 'raw'=>$resp];
   }
 
   private function connect(): bool
@@ -102,19 +135,14 @@ class AsteriskManager
     $this->sock = @fsockopen($this->cfg['host'], (int)$this->cfg['port'], $errno, $errstr, (int)$this->cfg['timeout']);
     if (!$this->sock) return false;
     stream_set_timeout($this->sock, (int)$this->cfg['timeout']);
-    // Read banner
     fgets($this->sock, 1024);
     return true;
   }
-
   private function login(): bool
   {
-    $msg = "Action: Login\r\nUsername: {$this->cfg['username']}\r\nSecret: {$this->cfg['secret']}\r\n\r\n";
-    fwrite($this->sock, $msg);
-    $r = $this->readResponse();
-    return str_contains($r, 'Response: Success');
+    fwrite($this->sock, "Action: Login\r\nUsername: {$this->cfg['username']}\r\nSecret: {$this->cfg['secret']}\r\n\r\n");
+    return str_contains($this->readResponse(), 'Response: Success');
   }
-
   private function logoff(): void
   {
     if (!is_resource($this->sock)) return;
@@ -122,16 +150,14 @@ class AsteriskManager
     fclose($this->sock);
     $this->sock = null;
   }
-
   private function readResponse(): string
   {
-    $out = '';
-    $start = microtime(true);
+    $out = ''; $start = microtime(true);
     while (!feof($this->sock)) {
       $line = fgets($this->sock, 1024);
       if ($line === false) break;
       $out .= $line;
-      if (rtrim($line) === '') break; // AMI packets end with blank line
+      if (rtrim($line) === '') break;
       if (microtime(true) - $start > $this->cfg['timeout']) break;
     }
     return $out;

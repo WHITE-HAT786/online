@@ -177,7 +177,7 @@ include __DIR__ . '/../includes/header.php';
           <?php if ($p['current']): ?>
             <button class="plan-cta plan-current">Current Plan</button>
           <?php else: ?>
-            <button class="plan-cta">Choose Plan</button>
+            <button class="plan-cta plan-choose" data-plan="<?= e($p['name']) ?>">Choose Plan</button>
           <?php endif; ?>
 
           <ul class="plan-features">

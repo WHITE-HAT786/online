@@ -255,3 +255,58 @@ function togglePw(btn) {
     icon.className = 'fa-regular fa-eye';
   }
 }
+
+/* ==========================================================
+   Cryptomus subscription checkout
+   ========================================================== */
+document.querySelectorAll('.plan-choose').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const plan = btn.dataset.plan;
+    const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = 'Redirecting…';
+    try {
+      const r = await API.post('/backend/subscription/checkout.php', { plan });
+      if (r.data?.url) { window.location.href = r.data.url; }
+      else { toast('Could not start checkout', 'error'); btn.disabled = false; btn.innerHTML = orig; }
+    } catch (err) { toast(err.message, 'error'); btn.disabled = false; btn.innerHTML = orig; }
+  });
+});
+
+/* ==========================================================
+   Auto country flag detection from phone number
+   ========================================================== */
+(function () {
+  const codes = [
+    ['+880','🇧🇩'],['+971','🇦🇪'],['+92','🇵🇰'],['+91','🇮🇳'],['+86','🇨🇳'],['+82','🇰🇷'],['+81','🇯🇵'],
+    ['+63','🇵🇭'],['+62','🇮🇩'],['+61','🇦🇺'],['+55','🇧🇷'],['+52','🇲🇽'],['+49','🇩🇪'],['+44','🇬🇧'],
+    ['+39','🇮🇹'],['+34','🇪🇸'],['+33','🇫🇷'],['+27','🇿🇦'],['+7','🇷🇺'],['+1','🇺🇸'],
+  ];
+  const detect = num => {
+    if (!num) return null;
+    const clean = num.replace(/[\s()\-]/g,'');
+    for (const [pfx, em] of codes) if (clean.startsWith(pfx)) return em;
+    return null;
+  };
+  document.querySelectorAll('input[type="tel"], .dialpad-input input, #dialpadInput, input[placeholder*="Enter phone"], input[placeholder*="+1"]').forEach(inp => {
+    const wrap = inp.closest('.dialpad-input-row, .phone-input-group, .phone-wrap');
+    if (!wrap) return;
+    let host = wrap.querySelector('.flag-emoji');
+    if (!host) {
+      const flagEl = wrap.querySelector('.flag, .dialpad-country .flag');
+      if (!flagEl) return;
+      host = document.createElement('span');
+      host.className = 'flag-emoji';
+      host.style.cssText = 'display:inline-block;font-size:16px;line-height:1;position:absolute;transform:translate(-2px,-2px);';
+      flagEl.style.position = 'relative';
+      flagEl.appendChild(host);
+    }
+    const update = () => {
+      const em = detect(inp.value);
+      host.textContent = em || '';
+      host.style.display = em ? 'block' : 'none';
+    };
+    inp.addEventListener('input', update);
+    update();
+  });
+})();
+
