@@ -67,6 +67,14 @@ document.getElementById('checkAll')?.addEventListener('change', (e) => {
     .forEach(cb => cb.checked = e.target.checked);
 });
 
+/* Reports page — tab switching (visual only) */
+document.querySelectorAll('.reports-tabs .reports-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.reports-tabs .reports-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+
 /* Password show/hide (auth pages) */
 function togglePw(btn) {
   const input = btn.parentElement.querySelector('input');
