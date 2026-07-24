@@ -421,3 +421,320 @@ button { font-family: inherit; cursor: pointer; }
   .content { padding: 8px 16px 20px; }
   .datetime .date, .datetime .time { display: none; }
 }
+
+
+/* ============================================================
+   Dialer PAGE (dialer.php) — big keypad + active call + recents
+   ============================================================ */
+.dialer-page { display: flex; flex-direction: column; gap: 22px; }
+
+.dialer-card { padding: 26px 26px 24px; }
+.dialer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 12px; margin-bottom: 22px;
+}
+.dialer-title {
+  font-size: 22px; font-weight: 700; letter-spacing: -.3px;
+  border-bottom: 3px solid var(--brand-blue);
+  padding-bottom: 8px;
+}
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px; border-radius: 10px;
+  background: #fff; border: 1px solid var(--border);
+  color: var(--text); font-weight: 500; font-size: 13.5px;
+  cursor: pointer;
+}
+.btn-outline:hover { background: #f6f8fd; border-color: #d5dcea; }
+
+.dialer-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 26px; }
+
+/* ------------- LEFT: input + keypad ------------- */
+.dialpad-input-row { display: flex; gap: 10px; margin-bottom: 16px; }
+.dialpad-country {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 14px;
+  border: 1px solid var(--border); border-radius: 10px;
+  height: 54px; background: #fff; cursor: pointer; color: var(--text);
+}
+.dialpad-country .flag {
+  width: 24px; height: 16px; border-radius: 2px; overflow: hidden;
+  background:
+    linear-gradient(to bottom,#b22234 0,#b22234 8%,#fff 8%,#fff 15%,#b22234 15%,#b22234 23%,
+      #fff 23%,#fff 31%,#b22234 31%,#b22234 38%,#fff 38%,#fff 46%,#b22234 46%,#b22234 54%,
+      #fff 54%,#fff 62%,#b22234 62%,#b22234 69%,#fff 69%,#fff 77%,#b22234 77%,#b22234 85%,
+      #fff 85%,#fff 92%,#b22234 92%,#b22234 100%);
+  position: relative;
+}
+.dialpad-country .flag::before {
+  content:""; position:absolute; top:0; left:0; width:40%; height:54%; background:#3c3b6e;
+}
+.dialpad-country .code { font-weight: 500; font-size: 14px; }
+.dialpad-country i { color: var(--muted); font-size: 11px; }
+
+.dialpad-input {
+  flex: 1; position: relative;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: #fff; height: 54px;
+  display: flex; align-items: center;
+}
+.dialpad-input input {
+  flex: 1; height: 100%;
+  border: none; outline: none;
+  padding: 0 44px 0 18px;
+  font-family: inherit; font-size: 15px;
+  background: transparent; color: var(--text);
+}
+.dialpad-input input::placeholder { color: #a6adbf; }
+.dialpad-input .clear-input {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #eef2f9; color: var(--muted);
+  border: none; display: grid; place-items: center;
+  font-size: 11px; cursor: pointer;
+}
+.dialpad-input .clear-input:hover { background: #dfe5f1; color: var(--text); }
+
+/* Big keypad */
+.dialpad {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden; background: #fff;
+}
+.dp-key {
+  border: none; background: #fff;
+  padding: 22px 0 18px;
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.dp-key:nth-child(3n) { border-right: none; }
+.dp-key:nth-child(n+10) { border-bottom: none; }
+.dp-key:hover { background: #f6f8fd; }
+.dp-key:active { background: #eaf1ff; }
+.dp-num { font-size: 30px; font-weight: 600; color: var(--text); line-height: 1; }
+.dp-sub { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; }
+
+/* Primary actions */
+.dp-primary-actions {
+  display: grid; grid-template-columns: 1fr 1.35fr 1fr;
+  gap: 12px; margin-top: 18px;
+}
+.dp-action {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; color: var(--text-2);
+  transition: background .15s, border-color .15s, color .15s;
+}
+.dp-action i { font-size: 18px; }
+.dp-action span { font-size: 13px; font-weight: 500; }
+.dp-action:hover { background: #f6f8fd; border-color: #d5dcea; color: var(--text); }
+
+.dp-call {
+  background: var(--brand-green);
+  border-color: var(--brand-green);
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(16,185,129,.32);
+}
+.dp-call:hover { background: #0ea371; border-color: #0ea371; color: #fff; }
+.dp-call i { font-size: 20px; }
+.dp-call span { font-size: 15px; font-weight: 600; }
+
+/* Secondary actions */
+.dp-secondary-actions {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-top: 12px;
+}
+.dp-toggle {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; color: var(--text-2);
+  transition: background .15s, border-color .15s;
+}
+.dp-toggle i { font-size: 16px; }
+.dp-toggle span { font-size: 12.5px; font-weight: 500; }
+.dp-toggle:hover { background: #f6f8fd; border-color: #d5dcea; }
+
+/* ------------- RIGHT: active call + recents ------------- */
+.dialer-right { display: flex; flex-direction: column; gap: 22px; }
+
+.active-call-label {
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--brand-blue);
+  margin-bottom: 10px;
+}
+.active-call-card {
+  border: 1px solid #b7e6cd;
+  background: linear-gradient(180deg, #ecfdf5 0%, #f6fefa 100%);
+  border-radius: 14px; padding: 18px;
+}
+.ac-top { display: flex; align-items: flex-start; gap: 14px; }
+.ac-avatar {
+  position: relative;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: #d1fadf; color: #14a06b;
+  display: grid; place-items: center;
+  font-weight: 700; font-size: 16px;
+  flex-shrink: 0;
+}
+.ac-online {
+  position: absolute; bottom: 2px; right: 2px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--brand-green);
+  border: 2px solid #ecfdf5;
+}
+.ac-info { flex: 1; }
+.ac-name  { font-weight: 700; font-size: 16px; color: var(--text); }
+.ac-num   { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.ac-timer { font-size: 14px; font-weight: 600; color: var(--brand-green); margin-top: 4px; }
+
+.ac-signal { display: flex; align-items: flex-end; gap: 3px; height: 22px; }
+.ac-signal span { width: 4px; background: var(--brand-green); border-radius: 2px; }
+.ac-signal span:nth-child(1) { height: 6px;  }
+.ac-signal span:nth-child(2) { height: 10px; }
+.ac-signal span:nth-child(3) { height: 15px; }
+.ac-signal span:nth-child(4) { height: 20px; }
+
+.ac-actions {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 8px; margin-top: 16px;
+}
+.ac-btn {
+  background: #fff; border: 1px solid #dceee5;
+  border-radius: 10px; padding: 10px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; color: var(--text-2);
+  transition: background .15s;
+}
+.ac-btn i { font-size: 14px; }
+.ac-btn span { font-size: 12px; font-weight: 500; }
+.ac-btn:hover { background: #f6fefa; }
+.ac-btn-end {
+  background: #ef4444; border-color: #ef4444; color: #fff;
+  box-shadow: 0 6px 16px rgba(239,68,68,.35);
+}
+.ac-btn-end:hover { background: #dc2626; border-color: #dc2626; }
+
+/* Recent calls (dialer variant) */
+.rc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.rc-title {
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 1px; color: var(--text-2);
+}
+.rc-viewall {
+  color: var(--brand-blue); font-weight: 600; font-size: 13px;
+}
+.rc-viewall:hover { text-decoration: underline; }
+
+.rc-list { display: flex; flex-direction: column; }
+.rc-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eef2f9;
+}
+.rc-row:last-child { border-bottom: none; }
+.rc-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-weight: 700; font-size: 12.5px;
+  flex-shrink: 0;
+}
+.rc-avatar.rc-green  { background: #d1fadf; color: #14a06b; }
+.rc-avatar.rc-blue   { background: #dbeafe; color: #1e40af; }
+.rc-avatar.rc-red    { background: #fee2e2; color: #b91c1c; }
+.rc-avatar.rc-orange { background: #fed7aa; color: #b45309; }
+.rc-avatar.rc-purple { background: #ede9fe; color: #6d28d9; }
+
+.rc-arrow { font-size: 11px; flex-shrink: 0; }
+.rc-arrow.in   { color: var(--brand-blue); }
+.rc-arrow.out  { color: var(--brand-green); }
+.rc-arrow.miss { color: #ef4444; }
+
+.rc-info { flex: 1; min-width: 0; }
+.rc-name { font-weight: 600; font-size: 14px; color: var(--text); }
+.rc-num  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.rc-meta { text-align: right; }
+.rc-time { font-size: 12px; color: var(--muted); }
+.rc-dur  { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; margin-top: 4px; }
+.rc-dur.in   { color: var(--brand-green); }
+.rc-dur.miss { color: #ef4444; }
+
+.rc-clear {
+  display: block; text-align: center;
+  margin-top: 12px;
+  color: var(--brand-blue);
+  font-weight: 500; font-size: 13px;
+}
+.rc-clear:hover { text-decoration: underline; }
+
+/* ---------- Meta strip (footer info card) ---------- */
+.dialer-meta {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  padding: 20px 26px;
+}
+.meta-item { min-width: 0; }
+.meta-divider {
+  width: 1px; height: 44px;
+  background: var(--border);
+  justify-self: center;
+}
+.meta-label {
+  font-size: 12px; color: var(--muted);
+  margin-bottom: 6px; font-weight: 500;
+}
+.meta-account { display: flex; align-items: center; gap: 12px; }
+.meta-account-icon {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--brand-purple); color: #fff;
+  display: grid; place-items: center; font-size: 15px;
+  flex-shrink: 0;
+}
+.meta-account-name { font-weight: 600; font-size: 14px; }
+.meta-account-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--brand-green); margin-top: 2px;
+}
+.meta-account-status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-green); }
+
+.meta-caller {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; cursor: pointer;
+}
+.meta-caller-name { font-weight: 600; font-size: 14px; }
+.meta-caller-num  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.meta-caller .caret { color: var(--muted); font-size: 12px; }
+
+.meta-balance-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.meta-balance {
+  font-size: 22px; font-weight: 700;
+  color: var(--brand-green);
+  letter-spacing: -.3px;
+}
+.btn-topup { color: var(--brand-blue); border-color: #cfdcff; }
+.btn-topup:hover { background: #eaf1ff; border-color: var(--brand-blue); }
+
+/* Dialer responsive */
+@media (max-width: 1100px) {
+  .dialer-grid { grid-template-columns: 1fr; }
+  .dialer-meta { grid-template-columns: 1fr; gap: 18px; }
+  .meta-divider { display: none; }
+}
+@media (max-width: 700px) {
+  .dp-primary-actions { grid-template-columns: 1fr; }
+  .dp-secondary-actions { grid-template-columns: 1fr 1fr; }
+  .ac-actions { grid-template-columns: 1fr 1fr; }
+}

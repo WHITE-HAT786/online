@@ -31,7 +31,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-/* Dialer keypad */
+/* Dashboard mini-dialer keypad */
 document.querySelectorAll('.keypad .key').forEach(k => {
   k.addEventListener('click', () => {
     const input = document.querySelector('.dial-input input');
@@ -41,6 +41,23 @@ document.querySelectorAll('.keypad .key').forEach(k => {
 });
 document.querySelector('.dial-input .clear')?.addEventListener('click', () => {
   const input = document.querySelector('.dial-input input');
+  if (input) input.value = input.value.slice(0, -1);
+});
+
+/* Dialer page (dialer.php) — big keypad */
+document.querySelectorAll('.dialpad .dp-key').forEach(k => {
+  k.addEventListener('click', () => {
+    const input = document.getElementById('dialpadInput');
+    if (!input) return;
+    input.value += k.dataset.val || '';
+  });
+});
+document.querySelector('.dialpad-input .clear-input')?.addEventListener('click', () => {
+  const input = document.getElementById('dialpadInput');
+  if (input) input.value = '';
+});
+document.getElementById('dpClearBtn')?.addEventListener('click', () => {
+  const input = document.getElementById('dialpadInput');
   if (input) input.value = input.value.slice(0, -1);
 });
 
