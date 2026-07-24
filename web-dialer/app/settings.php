@@ -46,6 +46,8 @@ include __DIR__ . '/../includes/header.php';
 
   <!-- =============== Main grid =============== -->
   <div class="settings-main">
+    <!-- ============= PROFILE TAB ============= -->
+    <div class="tab-panel" data-tab="profile">
     <!-- ---------- Profile Information ---------- -->
     <div class="card settings-card">
       <div class="settings-card-title">Profile Information</div>
@@ -151,6 +153,10 @@ include __DIR__ . '/../includes/header.php';
       </div>
     </div>
 
+    </div><!-- /.tab-panel profile -->
+
+    <!-- ============= SIP & CALLS TAB ============= -->
+    <div class="tab-panel" data-tab="sip" hidden>
     <!-- ---------- Call Settings ---------- -->
     <div class="card settings-card">
       <div class="settings-card-title">Call Settings</div>
@@ -222,6 +228,10 @@ include __DIR__ . '/../includes/header.php';
       </div>
     </div>
 
+    </div><!-- /.tab-panel sip -->
+
+    <!-- ============= SECURITY TAB ============= -->
+    <div class="tab-panel" data-tab="security" hidden>
     <!-- ---------- Two-Factor Authentication ---------- -->
     <div class="card settings-card">
       <div class="settings-card-title">
@@ -241,6 +251,10 @@ include __DIR__ . '/../includes/header.php';
       </div>
     </div>
 
+    </div><!-- /.tab-panel security -->
+
+    <!-- ============= PREFERENCES TAB ============= -->
+    <div class="tab-panel" data-tab="preferences" hidden>
     <!-- ---------- Theme & Appearance ---------- -->
     <div class="card settings-card">
       <div class="settings-card-title">Theme &amp; Appearance</div>
@@ -299,6 +313,21 @@ include __DIR__ . '/../includes/header.php';
           </div>
         </div>
       </div>
+    </div>
+    </div><!-- /.tab-panel preferences -->
+
+    <!-- Placeholders for tabs not yet built -->
+    <div class="tab-panel" data-tab="audio" hidden>
+      <div class="tab-empty"><i class="fa-solid fa-volume-high"></i>Audio &amp; Video settings coming soon.</div>
+    </div>
+    <div class="tab-panel" data-tab="notifications" hidden>
+      <div class="tab-empty"><i class="fa-solid fa-bell"></i>Notification preferences coming soon.</div>
+    </div>
+    <div class="tab-panel" data-tab="integrations" hidden>
+      <div class="tab-empty"><i class="fa-solid fa-plug"></i>Third-party integrations coming soon.</div>
+    </div>
+    <div class="tab-panel" data-tab="plan" hidden>
+      <div class="tab-empty"><i class="fa-solid fa-credit-card"></i>Manage your plan on the <a href="subscription.php" style="color:var(--brand-blue);font-weight:600;">Subscription page</a>.</div>
     </div>
   </div>
 </div>

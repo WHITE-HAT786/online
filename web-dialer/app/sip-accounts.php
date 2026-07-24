@@ -114,7 +114,7 @@ include __DIR__ . '/../includes/header.php';
       </thead>
       <tbody>
         <?php foreach ($accounts as $i => $a): ?>
-        <tr>
+        <tr data-id="<?= (int)$a['id'] ?>">
           <td class="sip-col-num"><?= $i + 1 ?></td>
           <td>
             <div class="sip-account">

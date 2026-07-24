@@ -28,6 +28,14 @@ $siteTitle    = 'WebDialer';
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/style.css?v=<?= @filemtime(__DIR__ . '/../assets/css/style.css') ?: time() ?>" />
+  <script>
+    // Apply stored theme immediately to avoid FOUC
+    (function(){try{
+      var t = localStorage.getItem('wd_theme') || 'light';
+      if (t === 'system') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    }catch(e){}})();
+  </script>
   <script src="../assets/js/api.js?v=<?= @filemtime(__DIR__ . '/../assets/js/api.js') ?: time() ?>"></script>
 </head>
 <body>

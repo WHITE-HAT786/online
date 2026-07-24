@@ -115,7 +115,7 @@ include __DIR__ . '/../includes/header.php';
         <?php foreach ($contacts as $c):
           $groupCls = $groupColor[$c['group']] ?? 'blue';
         ?>
-        <tr>
+        <tr data-id="<?= (int)$c['id'] ?>">
           <td class="col-check">
             <label class="checkbox"><input type="checkbox" /><span></span></label>
           </td>

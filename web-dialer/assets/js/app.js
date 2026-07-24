@@ -310,3 +310,118 @@ document.querySelectorAll('.plan-choose').forEach(btn => {
   });
 })();
 
+
+/* ==========================================================
+   Theme switcher (Light / Dark / System) — persists per user
+   ========================================================== */
+(function () {
+  const KEY = 'wd_theme';
+  function apply(theme) {
+    const html = document.documentElement;
+    if (theme === 'system') {
+      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      html.setAttribute('data-theme', dark ? 'dark' : 'light');
+    } else {
+      html.setAttribute('data-theme', theme);
+    }
+  }
+  const saved = localStorage.getItem(KEY) || 'light';
+  apply(saved);
+  document.querySelectorAll('.theme-grid .theme-opt').forEach(btn => {
+    const key = (btn.textContent || '').trim().toLowerCase();  // "light"|"dark"|"system"
+    if (key === saved) {
+      btn.parentElement.querySelectorAll('.theme-opt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    btn.addEventListener('click', () => {
+      localStorage.setItem(KEY, key);
+      apply(key);
+    });
+  });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if ((localStorage.getItem(KEY) || 'light') === 'system') apply('system');
+  });
+})();
+
+/* ==========================================================
+   Settings tab-panel switching
+   ========================================================== */
+(function () {
+  const nav = document.querySelector('.settings-nav');
+  if (!nav) return;
+  function showPanel(key) {
+    document.querySelectorAll('.tab-panel').forEach(p => {
+      p.hidden = p.dataset.tab !== key;
+    });
+  }
+  nav.querySelectorAll('.settings-nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      const href = item.getAttribute('href') || '';
+      if (href.startsWith('#')) {
+        e.preventDefault();
+        const key = href.slice(1);
+        showPanel(key);
+      }
+    });
+  });
+  // Show initial
+  const active = nav.querySelector('.settings-nav-item.active');
+  showPanel(active ? (active.getAttribute('href')?.slice(1) || 'profile') : 'profile');
+})();
+
+/* ==========================================================
+   Common CRUD modal (used for edit/delete confirmations)
+   ========================================================== */
+window.confirmAction = (title, message, onOk) => {
+  let m = document.getElementById('confirmModal');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'confirmModal';
+    m.className = 'modal';
+    m.innerHTML = `
+      <div class="modal-backdrop" data-modal-close></div>
+      <div class="modal-dialog modal-sm">
+        <header class="modal-header">
+          <div class="modal-title"><span class="modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span id="confirmTitle">Confirm</span></div>
+          <button class="modal-close" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+        </header>
+        <div class="modal-body" id="confirmBody"></div>
+        <footer class="modal-footer">
+          <button class="btn btn-ghost" data-modal-close>Cancel</button>
+          <button class="btn btn-danger" id="confirmOk">Delete</button>
+        </footer>
+      </div>`;
+    document.body.appendChild(m);
+  }
+  m.querySelector('#confirmTitle').textContent = title;
+  m.querySelector('#confirmBody').textContent  = message;
+  const ok = m.querySelector('#confirmOk');
+  const handler = async () => { m.classList.remove('open'); ok.removeEventListener('click', handler); await onOk(); };
+  ok.addEventListener('click', handler);
+  m.classList.add('open');
+};
+
+/* -------- Wire edit/delete rows on contacts + SIP tables -------- */
+document.querySelectorAll('.contacts-table tbody tr[data-id] .row-delete, .contacts-table tbody tr .row-delete').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tr = btn.closest('tr');
+    const id = tr.dataset.id;
+    if (!id) return;
+    confirmAction('Delete contact', 'This will permanently delete the contact. Continue?', async () => {
+      try { await API.post('/backend/contacts/delete.php', { id }); tr.remove(); toast('Contact deleted', 'success'); }
+      catch (err) { toast(err.message, 'error'); }
+    });
+  });
+});
+document.querySelectorAll('.sip-table tbody tr[data-id] .sip-actions-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tr = btn.closest('tr');
+    const id = tr.dataset.id;
+    if (!id) return;
+    confirmAction('Delete SIP account', 'This will remove this SIP account. Continue?', async () => {
+      try { await API.post('/backend/sip/delete.php', { id }); tr.remove(); toast('SIP account deleted', 'success'); }
+      catch (err) { toast(err.message, 'error'); }
+    });
+  });
+});
+
