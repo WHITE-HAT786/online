@@ -75,6 +75,14 @@ document.querySelectorAll('.reports-tabs .reports-tab').forEach(tab => {
   });
 });
 
+/* Subscription page — Monthly/Yearly toggle */
+document.querySelectorAll('.cycle-toggle .ct-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.parentElement.querySelectorAll('.ct-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
 /* Password show/hide (auth pages) */
 function togglePw(btn) {
   const input = btn.parentElement.querySelector('input');
