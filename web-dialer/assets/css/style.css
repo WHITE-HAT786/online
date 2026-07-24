@@ -1012,3 +1012,265 @@ button { font-family: inherit; cursor: pointer; }
   .contacts-head-actions { justify-content: flex-end; }
 }
 
+
+/* ============================================================
+   Sidebar Current Plan card
+   ============================================================ */
+.sidebar-plan {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 14px;
+  color: #cfd8ee;
+}
+.plan-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px;
+}
+.plan-label { font-size: 11px; color: #8ea0c4; font-weight: 500; letter-spacing: .3px; }
+.plan-name  { color: #fff; font-weight: 700; font-size: 15px; margin-top: 2px; }
+.plan-badge {
+  background: rgba(16,185,129,.15);
+  color: #34d399;
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.plan-price {
+  color: #fff; font-size: 20px; font-weight: 700; letter-spacing: -.3px;
+}
+.plan-price span {
+  color: #8ea0c4; font-size: 12px; font-weight: 500; margin-left: 2px;
+}
+.plan-renew { font-size: 12px; color: #8ea0c4; margin-top: 4px; }
+.plan-cta {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 12px;
+  background: rgba(26,86,255,.18);
+  color: #7fa4ff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12.5px; font-weight: 500;
+  transition: background .15s, color .15s;
+}
+.plan-cta:hover { background: rgba(26,86,255,.3); color: #fff; }
+
+/* ============================================================
+   Call Logs page
+   ============================================================ */
+.calllog-head { margin-bottom: 18px; }
+.calllog-title {
+  font-size: 22px; font-weight: 700; letter-spacing: -.3px;
+  margin-bottom: 4px;
+}
+.calllog-sub { color: var(--muted); font-size: 14px; }
+
+/* Stats */
+.calllog-stats {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 16px; margin-bottom: 22px;
+}
+.cl-stat {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.cl-stat-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.cl-stat-icon.blue   { background: #dbeafe; color: #1d4ed8; }
+.cl-stat-icon.green  { background: #d1fadf; color: #059669; }
+.cl-stat-icon.purple { background: #ede9fe; color: #7c3aed; }
+.cl-stat-icon.orange { background: #ffedd5; color: #d97706; }
+.cl-stat-icon.sky    { background: #e0f2fe; color: #0284c7; }
+.cl-stat-label { color: var(--muted); font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.cl-stat-value { font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+.cl-stat-delta {
+  margin-top: 6px; font-size: 12px;
+  color: var(--brand-green); font-weight: 500;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.cl-stat-delta.down { color: #ef4444; }
+.cl-stat-delta span { color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+/* Card */
+.calllog-card { padding: 22px 24px; }
+
+/* Toolbar row 1 */
+.cl-toolbar {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.cl-search {
+  flex: 1; min-width: 260px;
+  position: relative;
+  display: flex; align-items: center;
+}
+.cl-search input {
+  width: 100%; height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 46px 0 16px;
+  font-family: inherit; font-size: 14px;
+  background: #fff; color: var(--text);
+}
+.cl-search input::placeholder { color: #a6adbf; }
+.cl-search input:focus {
+  outline: none; border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(26,86,255,.10);
+}
+.cl-search button {
+  position: absolute; right: 6px; top: 6px;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: transparent; border: none;
+  color: var(--muted);
+  display: grid; place-items: center;
+  cursor: pointer;
+}
+.cl-search button:hover { background: #eef2f9; color: var(--text); }
+
+.cl-toolbar-actions {
+  display: flex; gap: 10px;
+}
+.cl-toolbar-actions .btn-outline { height: 44px; padding: 0 18px; font-weight: 500; }
+
+/* Toolbar row 2 (filters) */
+.cl-filters {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.cl-select { position: relative; height: 44px; }
+.cl-select select {
+  width: 100%; height: 100%;
+  appearance: none; -webkit-appearance: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 40px 0 16px;
+  font-family: inherit; font-size: 14px;
+  background: #fff; color: var(--text);
+  cursor: pointer;
+}
+.cl-select select:focus {
+  outline: none; border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(26,86,255,.10);
+}
+.cl-select .caret {
+  position: absolute; right: 16px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted); font-size: 11px;
+  pointer-events: none;
+}
+.cl-select .left-ic {
+  position: absolute; left: 16px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted); font-size: 13px;
+  pointer-events: none;
+}
+.cl-select.cl-select-lg select { padding-left: 44px; }
+
+/* Table */
+.cl-table-wrap { overflow-x: auto; }
+.cl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.cl-table thead th {
+  text-align: left;
+  padding: 12px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+  background: #fafbfd;
+  white-space: nowrap;
+}
+.cl-table tbody td {
+  padding: 14px;
+  border-bottom: 1px solid #eef2f9;
+  vertical-align: middle;
+  color: var(--text);
+  white-space: nowrap;
+}
+.cl-table tbody tr:last-child td { border-bottom: none; }
+.cl-table tbody tr:hover { background: #fafbfd; }
+
+.cl-col-num { width: 42px; color: var(--muted); }
+.cl-col-center { text-align: center; }
+.cl-date { color: var(--text-2); }
+
+/* Call type pills */
+.cl-type {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-weight: 500; font-size: 13px;
+}
+.cl-type i { font-size: 11px; }
+.cl-type.out  { color: var(--brand-green); }
+.cl-type.in   { color: var(--brand-purple); }
+.cl-type.miss { color: #ef4444; }
+
+/* Status pills */
+.cl-status {
+  display: inline-flex; align-items: center;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 500;
+}
+.cl-status.done { background: #d1fadf; color: #14a06b; }
+.cl-status.miss { background: #fee2e2; color: #b91c1c; }
+.cl-status.fail { background: #f1f3f8; color: #6b7488; }
+
+/* Play & more buttons */
+.cl-play {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #eff6ff; border: none;
+  color: var(--brand-blue);
+  display: inline-grid; place-items: center;
+  cursor: pointer; font-size: 11px;
+  transition: background .15s;
+}
+.cl-play:hover { background: #dbeafe; }
+.cl-dash { color: var(--muted); }
+.cl-more {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: transparent; border: none;
+  color: var(--muted); font-size: 14px;
+  cursor: pointer;
+}
+.cl-more:hover { background: #eef2f9; color: var(--text); }
+
+/* Footer */
+.cl-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  padding-top: 18px;
+}
+.cl-info { color: var(--muted); font-size: 13px; }
+.cl-pagination { display: flex; align-items: center; gap: 6px; }
+.page-ellipsis { color: var(--muted); padding: 0 4px; font-size: 13px; }
+.cl-perpage .toolbar-select.small { min-width: 130px; height: 34px; }
+.cl-perpage .toolbar-select select { height: 34px; font-size: 13px; padding: 0 34px 0 12px; }
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .calllog-stats { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .calllog-stats { grid-template-columns: repeat(2, 1fr); }
+  .cl-filters    { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .calllog-stats { grid-template-columns: 1fr; }
+  .cl-filters    { grid-template-columns: 1fr; }
+}
+

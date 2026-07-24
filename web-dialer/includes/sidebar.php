@@ -40,6 +40,30 @@ $user = $user ?? [
       <?php endforeach; ?>
     </nav>
 
+    <?php if (!empty($currentPlan)): ?>
+      <div class="sidebar-plan">
+        <div class="plan-head">
+          <div>
+            <div class="plan-label">Current Plan</div>
+            <div class="plan-name"><?= htmlspecialchars($currentPlan['name']) ?></div>
+          </div>
+          <?php if (($currentPlan['status'] ?? '') === 'active'): ?>
+            <span class="plan-badge">Active</span>
+          <?php endif; ?>
+        </div>
+        <div class="plan-price">
+          <?= htmlspecialchars($currentPlan['price']) ?>
+          <span>/ <?= htmlspecialchars($currentPlan['period'] ?? 'month') ?></span>
+        </div>
+        <?php if (!empty($currentPlan['renews'])): ?>
+          <div class="plan-renew">Renews on <?= htmlspecialchars($currentPlan['renews']) ?></div>
+        <?php endif; ?>
+        <a href="subscription.php" class="plan-cta">
+          <i class="fa-regular fa-credit-card"></i> View Subscription
+        </a>
+      </div>
+    <?php endif; ?>
+
     <div class="sidebar-user">
       <img src="<?= htmlspecialchars($user['avatar']) ?>" alt="" class="avatar" />
       <div class="user-meta">
