@@ -2640,3 +2640,62 @@ button { font-family: inherit; cursor: pointer; }
 }
 .tab-empty i { font-size: 40px; color: var(--brand-blue); display:block; margin-bottom: 14px; opacity: .5; }
 
+
+/* ============================================================
+   Extensions Page  —  password reveal + Yes/No pills
+   ============================================================ */
+.ext-pw {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 13px; color: var(--text-2);
+  background: #f4f6fb;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 10px;
+  min-width: 140px;
+}
+.ext-pw-mask { flex: 1; letter-spacing: 1px; user-select: all; }
+.ext-pw-eye {
+  border: 0; background: transparent; cursor: pointer;
+  color: var(--muted); padding: 2px 4px; border-radius: 4px;
+  transition: color .15s, background .15s;
+}
+.ext-pw-eye:hover { color: var(--brand-blue); background: rgba(26,86,255,.08); }
+
+.pill-yes, .pill-no {
+  display: inline-block;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  letter-spacing: .2px;
+}
+.pill-yes {
+  background: #dcfce7; color: #14a06b;
+  border: 1px solid #bbf7d0;
+}
+.pill-no {
+  background: #f1f3f8; color: #6b7488;
+  border: 1px solid #dfe4ee;
+}
+
+.row-action {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: #fff; border: 1px solid var(--border);
+  color: var(--muted); font-size: 13px;
+  cursor: pointer; margin-right: 4px;
+  display: inline-grid; place-items: center;
+  transition: color .15s, background .15s, border-color .15s;
+}
+.row-action:hover { color: var(--brand-blue); border-color: var(--brand-blue); background: rgba(26,86,255,.06); }
+.row-edit:hover   { color: var(--brand-blue); }
+
+/* Dark theme overrides */
+[data-theme="dark"] .ext-pw       { background: #14192b; color: var(--text); }
+[data-theme="dark"] .ext-pw-eye:hover { background: rgba(26,86,255,.18); }
+[data-theme="dark"] .pill-yes     { background: rgba(16,185,129,.18); color: #6ee7b7; border-color: rgba(16,185,129,.30); }
+[data-theme="dark"] .pill-no      { background: rgba(148,163,184,.15); color: #cbd5e1; border-color: rgba(148,163,184,.25); }
+[data-theme="dark"] .row-action   { background: var(--card); border-color: var(--border); color: var(--text-2); }
+[data-theme="dark"] .row-action:hover { background: rgba(26,86,255,.18); }
+[data-theme="dark"] .sip-actions-btn  { background: var(--card); border-color: var(--border); color: var(--text-2); }
+[data-theme="dark"] .sip-actions-btn:hover { background: rgba(26,86,255,.18); color: var(--text); }
