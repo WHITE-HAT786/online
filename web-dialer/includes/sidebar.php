@@ -9,6 +9,7 @@ $menu = [
   ['key' => 'contacts',     'label' => 'Contacts',     'icon' => 'fa-address-book',     'href' => 'contacts.php'],
   ['key' => 'call-logs',    'label' => 'Call Logs',    'icon' => 'fa-list',             'href' => 'call-logs.php'],
   ['key' => 'sip-accounts', 'label' => 'SIP Accounts', 'icon' => 'fa-server',           'href' => 'sip-accounts.php'],
+  ['key' => 'extensions',   'label' => 'Extensions',   'icon' => 'fa-headset',           'href' => 'extensions.php', 'badge' => 'New'],
   ['key' => 'settings',     'label' => 'Settings',     'icon' => 'fa-gear',             'href' => 'settings.php'],
   ['key' => 'subscription', 'label' => 'Subscription', 'icon' => 'fa-credit-card',      'href' => 'subscription.php'],
   ['key' => 'reports',      'label' => 'Reports',      'icon' => 'fa-chart-line',       'href' => 'reports.php'],
@@ -36,6 +37,9 @@ $user = $user ?? [
            class="nav-item <?= ($activeMenu ?? '') === $item['key'] ? 'active' : '' ?>">
           <i class="fa-solid <?= $item['icon'] ?>"></i>
           <span><?= $item['label'] ?></span>
+          <?php if (!empty($item['badge'])): ?>
+            <span class="nav-badge"><?= htmlspecialchars($item['badge']) ?></span>
+          <?php endif; ?>
         </a>
       <?php endforeach; ?>
     </nav>
